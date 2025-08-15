@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // o react-native-vector-icons/MaterialCommunityIcons
+import { MaterialCommunityIcons } from '@expo/vector-icons'; 
 
 const PermissionItem = ({ title }) => {
   return (

@@ -1,13 +1,5 @@
 import React, { useState, useContext } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  ToastAndroid,
-  TextInput,
-  TouchableOpacity,
-} from "react-native";
+import {View, Text, Image, StyleSheet,ToastAndroid, TextInput, TouchableOpacity, } from "react-native";
 import CustomInput from "../components/inputs/CustomInput.js";
 import CustomButton from "../components/buttons/CustomButton.js";
 import { AuthContext } from "../context/AuthContext";
@@ -138,7 +130,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     paddingLeft: 10,
-    paddingRight: 60, // espacio para el botón "Mostrar"
+    paddingRight: 60, 
     fontSize: 16,
   },
   showButton: {

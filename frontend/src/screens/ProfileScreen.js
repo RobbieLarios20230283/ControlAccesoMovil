@@ -10,39 +10,78 @@ import {
   Platform,
   StatusBar,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import LogoutButton from "../components/buttons/LogoutButton";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 
+// Hooks
+import useUserProfile from "../hooks/useFetchProfile";
+import { useFetchTeamName } from "../hooks/useFetchTeamName";
+
 const ProfileScreen = () => {
   const { logout } = useContext(AuthContext);
   const navigation = useNavigation();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
+  // Traer datos de perfil
+  const { profile, loading, error } = useUserProfile();
 
-      Alert.alert(
-        "Sesión cerrada",
-        "Se cerró sesión con éxito",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              navigation.reset({
-                index: 0,
-                routes: [{ name: "Login" }],
-              });
-            },
+  // Traer nombre del área a partir del department (teamId)
+  const { teamName, loading: teamLoading } = useFetchTeamName(profile?.IdTeam);
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Confirmar",
+      "¿Seguro que deseas cerrar sesión?",
+      [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Cerrar sesión",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await logout();
+              Alert.alert(
+                "Sesión cerrada",
+                "Se cerró sesión con éxito",
+                [
+                  {
+                    text: "OK",
+                    onPress: () =>
+                      navigation.reset({
+                        index: 0,
+                        routes: [{ name: "Login" }],
+                      }),
+                  },
+                ],
+                { cancelable: false }
+              );
+            } catch (error) {
+              Alert.alert("Error", "No se pudo cerrar sesión, intenta de nuevo.");
+            }
           },
-        ],
-        { cancelable: false }
-      );
-    } catch (error) {
-      Alert.alert("Error", "No se pudo cerrar sesión, intenta de nuevo.");
-    }
+        },
+      ],
+      { cancelable: true }
+    );
   };
+
+  if (loading || teamLoading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.loaderContainer}>
+        <Text style={{ color: "red" }}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView
@@ -56,29 +95,39 @@ const ProfileScreen = () => {
 
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: "https://i.pravatar.cc/150?img=47" }}
+            source={{
+              uri: profile?.photo || "https://i.pravatar.cc/150?img=47",
+            }}
             style={styles.profileImage}
           />
-          <Text style={styles.name}>Ruth Geraldine Fuentes Ramirez</Text>
+          <Text style={styles.name}>{profile?.fullName || "Sin nombre"}</Text>
         </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Nombres y Apellidos:</Text>
           <TextInput
             style={styles.input}
-            value="Ruth Geraldine Fuentes Ramirez"
+            value={profile?.fullName || ""}
             editable={false}
           />
         </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Departamento laboral:</Text>
-          <TextInput style={styles.input} value="Area Tecnica" editable={false} />
+          <TextInput
+            style={styles.input}
+            value={teamName}
+            editable={false}
+          />
         </View>
 
         <View style={styles.formGroup}>
           <Text style={styles.label}>Código de empleado:</Text>
-          <TextInput style={styles.input} placeholder="" />
+          <TextInput
+            style={styles.input}
+            value={profile?.numEmpleado || ""}
+            editable={false}
+          />
         </View>
       </ScrollView>
 
@@ -103,6 +152,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     height: 40,
     fontSize: 14,
+    color: "#000",
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#fff",
   },
 });
 
